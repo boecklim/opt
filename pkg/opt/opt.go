@@ -10,7 +10,7 @@ import (
 	"opt/internal/template"
 )
 
-type Mocker struct {
+type Generator struct {
 	cfg Config
 
 	registry *registry.Registry
@@ -28,8 +28,7 @@ type Config struct {
 	// WithResets bool
 }
 
-// New makes a new Mocker for the specified package directory.
-func New(cfg Config) (*Mocker, error) {
+func New(cfg Config) (*Generator, error) {
 	reg, err := registry.New(cfg.SrcDir, cfg.PkgName)
 	if err != nil {
 		return nil, err
@@ -40,26 +39,41 @@ func New(cfg Config) (*Mocker, error) {
 		return nil, err
 	}
 
-	return &Mocker{
+	return &Generator{
 		cfg:      cfg,
 		registry: reg,
 		tmpl:     tmpl,
 	}, nil
 }
 
-// Mock generates a mock for the specified interface name.
-func (m *Mocker) Mock(w io.Writer, namePairs ...string) error {
-	if len(namePairs) == 0 {
+func (m *Generator) Generate(w io.Writer, structName string) error {
+	if len(structName) == 0 {
 		return errors.New("must specify one struct")
+	}
+
+	structType, _, err := m.registry.LookupStruct(structName)
+	if err != nil {
+		return err
+	}
+
+	members := make([]template.Member, structType.NumFields())
+
+	for i := 0; i < structType.NumFields(); i++ {
+		members[i] = template.Member{
+			Name:       structType.Field(i).Name(),
+			Type:       structType.Field(i).Type().String(),
+			StructName: structName,
+		}
 	}
 
 	data := template.Data{
 		PkgName:    m.mockPkgName(),
-		StructName: namePairs[0],
+		StructName: structName,
+		Members:    members,
 	}
 
 	var buf bytes.Buffer
-	err := m.tmpl.Execute(&buf, data)
+	err = m.tmpl.Execute(&buf, data)
 	if err != nil {
 		return err
 	}
@@ -76,7 +90,7 @@ func (m *Mocker) Mock(w io.Writer, namePairs ...string) error {
 	return nil
 }
 
-func (m *Mocker) mockPkgName() string {
+func (m *Generator) mockPkgName() string {
 	if m.cfg.PkgName != "" {
 		return m.cfg.PkgName
 	}

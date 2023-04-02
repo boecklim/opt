@@ -91,7 +91,7 @@ func run(flags userFlags) error {
 		return err
 	}
 
-	if err = m.Mock(out, args...); err != nil {
+	if err = m.Generate(out, args[0]); err != nil {
 		return err
 	}
 

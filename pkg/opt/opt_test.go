@@ -13,7 +13,7 @@ func TestOpt(t *testing.T) {
 	require.NoError(t, err)
 
 	var buf bytes.Buffer
-	err = m.Mock(&buf, "ExampleStruct")
+	err = m.Generate(&buf, "ExampleStruct")
 	require.NoError(t, err)
 
 	// s := buf.String()

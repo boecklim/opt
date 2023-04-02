@@ -9,9 +9,16 @@ type Template struct {
 	tmpl *template.Template
 }
 
+type Member struct {
+	Name       string
+	Type       string
+	StructName string
+}
+
 type Data struct {
 	PkgName    string
 	StructName string
+	Members    []Member
 	// SrcPkgQualifier string
 	// Imports         []*registry.Package
 	// Mocks           []MockData
@@ -37,8 +44,20 @@ var optTemplate = `
 package {{.PkgName}}
 
 
+// TODO: imports
+
 type Option func(i *{{.StructName}})
 
+{{- range .Members}}
+
+// With {{.Name}} of type {{.Type}}
+func With{{.Name}}({{.Name}} {{.Type}}) Option {
+	return func(s *{{.StructName}}) {
+		s.{{.Name}} = {{.Name}}
+	}
+}
+
+{{- end}}
 
 func New(opts ...Option) *{{.StructName}} {
 	newInstance := {{.StructName}}{}

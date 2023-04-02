@@ -1,6 +1,7 @@
 package registry_test
 
 import (
+	"fmt"
 	"opt/internal/registry"
 	"testing"
 
@@ -10,14 +11,17 @@ import (
 func TestLookupStruct(t *testing.T) {
 	t.Run("test", func(t *testing.T) {
 
-		registry, err := registry.New("./", "main")
+		registry, err := registry.New("testpackages/example/", "example")
 		require.NoError(t, err)
 
 		_, _, err = registry.LookupInterface("ExampleInterface")
 		require.NoError(t, err)
 
-		_, _, err = registry.LookupStruct("ExampleStruct")
+		str, _, err := registry.LookupStruct("ExampleStruct")
 		require.NoError(t, err)
+
+		fmt.Printf("\n%s", str.Field(0).Name())
+		fmt.Printf("\n%s", str.Field(1).Name())
 
 	})
 }
