@@ -2,11 +2,11 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"opt/internal/template"
+	"opt/pkg/opt"
 	"os"
 	"path/filepath"
 )
@@ -17,12 +17,13 @@ var Version string = "dev"
 type userFlags struct {
 	outFile string
 	pkgName string
+	// structName string
 	// formatter  string
 	// stubImpl   bool
 	// skipEnsure bool
 	// withResets bool
-	// remove     bool
-	args []string
+	remove bool
+	args   []string
 }
 
 func main() {
@@ -30,12 +31,13 @@ func main() {
 	flag.StringVar(&flags.outFile, "out", "", "output file (default stdout)")
 	flag.StringVar(&flags.pkgName, "pkg", "", "package name (default will infer)")
 	// flag.StringVar(&flags.formatter, "fmt", "", "go pretty-printer: gofmt, goimports or noop (default gofmt)")
+	// flag.StringVar(&flags.structName, "struct", "", "which struct")
 	// flag.BoolVar(&flags.stubImpl, "stub", false,
 	// 	"return zero values when no mock implementation is provided, do not panic")
 	printVersion := flag.Bool("version", false, "show the version for moq")
 	// flag.BoolVar(&flags.skipEnsure, "skip-ensure", false,
 	// 	"suppress mock implementation check, avoid import cycle if mocks generated outside of the tested package")
-	// flag.BoolVar(&flags.remove, "rm", false, "first remove output file, if it exists")
+	flag.BoolVar(&flags.remove, "rm", false, "first remove output file, if it exists")
 	// flag.BoolVar(&flags.withResets, "with-resets", false,
 	// 	"generate functions to facilitate resetting calls made to a mock")
 
@@ -63,21 +65,35 @@ func main() {
 }
 
 func run(flags userFlags) error {
-	t, err := template.New()
-
-	if err != nil {
-		return err
+	if len(flags.args) < 2 {
+		return errors.New("not enough arguments")
 	}
 
+	if flags.remove && flags.outFile != "" {
+		if err := os.Remove(flags.outFile); err != nil {
+			if !errors.Is(err, os.ErrNotExist) {
+				return err
+			}
+		}
+	}
 	var buf bytes.Buffer
 	var out io.Writer = os.Stdout
 	if flags.outFile != "" {
 		out = &buf
 	}
-	data := template.Data{
+
+	srcDir, args := flags.args[0], flags.args[1:]
+	m, err := opt.New(opt.Config{
+		SrcDir:  srcDir,
 		PkgName: flags.pkgName,
+	})
+	if err != nil {
+		return err
 	}
-	t.Execute(out, data)
+
+	if err = m.Mock(out, args...); err != nil {
+		return err
+	}
 
 	if flags.outFile == "" {
 		return nil
@@ -89,5 +105,5 @@ func run(flags userFlags) error {
 		return err
 	}
 
-	return ioutil.WriteFile(flags.outFile, buf.Bytes(), 0o600)
+	return os.WriteFile(flags.outFile, buf.Bytes(), 0o600)
 }

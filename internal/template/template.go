@@ -3,6 +3,8 @@ package template
 import (
 	"io"
 	"text/template"
+
+	"opt/internal/registry"
 )
 
 type Template struct {
@@ -10,7 +12,13 @@ type Template struct {
 }
 
 type Data struct {
-	PkgName string
+	PkgName         string
+	SrcPkgQualifier string
+	Imports         []*registry.Package
+	Mocks           []MockData
+	StubImpl        bool
+	SkipEnsure      bool
+	WithResets      bool
 }
 
 // New returns a new instance of Template.
@@ -28,6 +36,22 @@ var optTemplate = `
 // github.com/boecklim/opt
 
 package {{.PkgName}}
+
+
+type Option func(i *{{.StructName}})
+
+
+func New(opts ...Option) *{{.StructName}} {
+	newInstance := {{.StructName}}{}
+
+		for _, opt := range opts {
+			opt(&newInstance)
+		}
+		
+		return &newInstance
+}
+
+
 `
 
 func (t Template) Execute(w io.Writer, data Data) error {
