@@ -2,20 +2,23 @@ package opt
 
 import (
 	"bytes"
-	"fmt"
+	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestOpt(t *testing.T) {
-	m, err := New(Config{SrcDir: "testpackages/example", PkgName: "example"})
-	if err != nil {
-		t.Fatalf("opt.New: %s", err)
-	}
+	m, err := New(Config{SrcDir: "testpackages/example/", PkgName: "example"})
+	require.NoError(t, err)
+
 	var buf bytes.Buffer
 	err = m.Mock(&buf, "ExampleStruct")
-	if err != nil {
-		t.Errorf("m.Mock: %s", err)
-	}
-	s := buf.String()
-	fmt.Println(s)
+	require.NoError(t, err)
+
+	// s := buf.String()
+	// fmt.Println(s)
+
+	err = os.WriteFile("testpackages/example/example_out.go", buf.Bytes(), 0o600)
+	require.NoError(t, err)
 }

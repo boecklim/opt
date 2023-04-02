@@ -3,8 +3,6 @@ package template
 import (
 	"io"
 	"text/template"
-
-	"opt/internal/registry"
 )
 
 type Template struct {
@@ -12,13 +10,14 @@ type Template struct {
 }
 
 type Data struct {
-	PkgName         string
-	SrcPkgQualifier string
-	Imports         []*registry.Package
-	Mocks           []MockData
-	StubImpl        bool
-	SkipEnsure      bool
-	WithResets      bool
+	PkgName    string
+	StructName string
+	// SrcPkgQualifier string
+	// Imports         []*registry.Package
+	// Mocks           []MockData
+	// StubImpl        bool
+	// SkipEnsure      bool
+	// WithResets      bool
 }
 
 // New returns a new instance of Template.

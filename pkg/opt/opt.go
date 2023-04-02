@@ -3,6 +3,7 @@ package opt
 import (
 	"bytes"
 	"errors"
+	"go/format"
 	"io"
 	"opt/internal/registry"
 
@@ -53,14 +54,25 @@ func (m *Mocker) Mock(w io.Writer, namePairs ...string) error {
 	}
 
 	data := template.Data{
-		PkgName: m.mockPkgName(),
+		PkgName:    m.mockPkgName(),
+		StructName: namePairs[0],
 	}
 
 	var buf bytes.Buffer
-	if err := m.tmpl.Execute(&buf, data); err != nil {
+	err := m.tmpl.Execute(&buf, data)
+	if err != nil {
 		return err
 	}
 
+	formatted, err := format.Source(buf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(formatted)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
