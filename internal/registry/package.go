@@ -13,11 +13,11 @@ type Package struct {
 	Alias string
 }
 
-// stripVendorPath strips the vendor dir prefix from a package path.
+// StripVendorPath strips the vendor dir prefix from a package path.
 // For example we might encounter an absolute path like
 // github.com/foo/bar/vendor/github.com/pkg/errors which is resolved
 // to github.com/pkg/errors.
-func stripVendorPath(p string) string {
+func StripVendorPath(p string) string {
 	parts := strings.Split(p, "/vendor/")
 	if len(parts) == 1 {
 		return p
@@ -99,5 +99,5 @@ func (p *Package) Path() string {
 		return ""
 	}
 
-	return stripVendorPath(p.pkg.Path())
+	return StripVendorPath(p.pkg.Path())
 }

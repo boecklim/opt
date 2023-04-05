@@ -3,7 +3,9 @@
 
 package example
 
-import ()
+import (
+	"time"
+)
 
 type Option func(i *ExampleStruct)
 

@@ -29,7 +29,6 @@ type userFlags struct {
 func main() {
 	var flags userFlags
 	flag.StringVar(&flags.outFile, "out", "", "output file (default stdout)")
-	flag.StringVar(&flags.pkgName, "pkg", "", "package name (default will infer)")
 	// flag.StringVar(&flags.formatter, "fmt", "", "go pretty-printer: gofmt, goimports or noop (default gofmt)")
 	// flag.StringVar(&flags.structName, "struct", "", "which struct")
 	// flag.BoolVar(&flags.stubImpl, "stub", false,
@@ -84,8 +83,7 @@ func run(flags userFlags) error {
 
 	srcDir, args := flags.args[0], flags.args[1:]
 	m, err := opt.New(opt.Config{
-		SrcDir:  srcDir,
-		PkgName: flags.pkgName,
+		SrcDir: srcDir,
 	})
 	if err != nil {
 		return err

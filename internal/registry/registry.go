@@ -10,10 +10,9 @@ import (
 )
 
 type Registry struct {
-	srcPkg     *packages.Package
-	moqPkgPath string
-	aliases    map[string]string
-	imports    map[string]*Package
+	srcPkg  *packages.Package
+	aliases map[string]string
+	imports map[string]*Package
 }
 
 // SrcPkg returns the types info for the source package.
@@ -23,7 +22,7 @@ func (r Registry) SrcPkg() *types.Package {
 
 // New loads the source package info and returns a new instance of
 // Registry.
-func New(srcDir, moqPkg string) (*Registry, error) {
+func New(srcDir string) (*Registry, error) {
 	srcPkg, err := pkgInfoFromPath(
 		srcDir, packages.NeedName|packages.NeedSyntax|packages.NeedTypes|packages.NeedTypesInfo|packages.NeedDeps,
 	)
@@ -32,16 +31,14 @@ func New(srcDir, moqPkg string) (*Registry, error) {
 	}
 
 	return &Registry{
-		srcPkg:     srcPkg,
-		moqPkgPath: findPkgPath(moqPkg, srcPkg),
-		imports:    make(map[string]*Package),
+		srcPkg:  srcPkg,
+		imports: make(map[string]*Package),
 	}, nil
 }
 
 type Var struct {
-	vr         *types.Var
-	imports    map[string]*Package
-	moqPkgPath string
+	vr      *types.Var
+	imports map[string]*Package
 
 	Name string
 }
@@ -116,10 +113,7 @@ func (r Registry) SrcPkgName() string {
 // suitable alias if there are any conflicts with previously imported
 // packages.
 func (r *Registry) AddImport(pkg *types.Package) *Package {
-	path := stripVendorPath(pkg.Path())
-	if path == r.moqPkgPath {
-		return nil
-	}
+	path := StripVendorPath(pkg.Path())
 
 	if imprt, ok := r.imports[path]; ok {
 		return imprt
@@ -143,6 +137,14 @@ func (r Registry) searchImport(name string) (*Package, bool) {
 	}
 
 	return nil, false
+}
+
+// MethodScope returns a new MethodScope.
+func (r *Registry) MethodScope() *MethodScope {
+	return &MethodScope{
+		registry:   r,
+		conflicted: map[string]bool{},
+	}
 }
 
 // resolveImportConflict generates and assigns a unique alias for

@@ -9,7 +9,7 @@ import (
 )
 
 func TestOpt(t *testing.T) {
-	m, err := New(Config{SrcDir: "testpackages/example/", PkgName: "example"})
+	m, err := New(Config{SrcDir: "testpackages/example/"})
 	require.NoError(t, err)
 
 	var buf bytes.Buffer

@@ -11,7 +11,7 @@ import (
 func TestLookupStruct(t *testing.T) {
 	t.Run("test", func(t *testing.T) {
 
-		registry, err := registry.New("testpackages/example/", "example")
+		registry, err := registry.New("testpackages/example/")
 		require.NoError(t, err)
 
 		str, _, err := registry.LookupStruct("ExampleStruct")

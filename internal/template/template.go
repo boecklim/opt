@@ -14,6 +14,7 @@ type Member struct {
 	Name       string
 	Type       string
 	StructName string
+	// Package    registry.Package
 }
 
 type Data struct {
