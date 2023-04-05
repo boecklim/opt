@@ -11,9 +11,10 @@ type Template struct {
 }
 
 type Member struct {
-	Name       string
-	Type       string
-	StructName string
+	Name            string
+	Type            string
+	StructName      string
+	CapitalizedName string
 }
 
 type Data struct {
@@ -51,7 +52,7 @@ type Option func(i *{{.StructName}})
 {{- range .Members}}
 
 // With {{.Name}} of type {{.Type}}
-func With{{.Name}}({{.Name}} {{.Type}}) Option {
+func With{{.CapitalizedName}}({{.Name}} {{.Type}}) Option {
 	return func(s *{{.StructName}}) {
 		s.{{.Name}} = {{.Name}}
 	}

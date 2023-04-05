@@ -10,7 +10,7 @@ import (
 type Option func(i *ExampleStruct)
 
 // With firstMember of type string
-func WithfirstMember(firstMember string) Option {
+func WithFirstMember(firstMember string) Option {
 	return func(s *ExampleStruct) {
 		s.firstMember = firstMember
 	}
@@ -24,7 +24,7 @@ func WithSecondMember(SecondMember int) Option {
 }
 
 // With timestamp of type time.Time
-func Withtimestamp(timestamp time.Time) Option {
+func WithTimestamp(timestamp time.Time) Option {
 	return func(s *ExampleStruct) {
 		s.timestamp = timestamp
 	}

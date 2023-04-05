@@ -3,11 +3,10 @@ package opt
 import (
 	"bytes"
 	"fmt"
+	"opt/pkg/opt/testpackages/example"
 	"os"
 	"testing"
 	"time"
-
-	"opt/pkg/opt/testpackages/example"
 
 	"github.com/stretchr/testify/require"
 )
@@ -29,9 +28,9 @@ func TestOpt(t *testing.T) {
 
 func TestConstructor(t *testing.T) {
 	example := example.New(
-		example.WithfirstMember("hello"),
+		example.WithFirstMember("hello"),
 		example.WithSecondMember(100),
-		example.Withtimestamp(time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)),
+		example.WithTimestamp(time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)),
 	)
 
 	fmt.Println(example)
