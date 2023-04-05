@@ -19,6 +19,6 @@ func TestOpt(t *testing.T) {
 	// s := buf.String()
 	// fmt.Println(s)
 
-	err = os.WriteFile("testpackages/example/example_out.go", buf.Bytes(), 0o600)
+	err = os.WriteFile("testpackages/example/constructor.go", buf.Bytes(), 0o600)
 	require.NoError(t, err)
 }

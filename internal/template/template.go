@@ -2,6 +2,7 @@ package template
 
 import (
 	"io"
+	"opt/internal/registry"
 	"text/template"
 )
 
@@ -16,11 +17,11 @@ type Member struct {
 }
 
 type Data struct {
-	PkgName    string
-	StructName string
-	Members    []Member
-	// SrcPkgQualifier string
-	// Imports         []*registry.Package
+	PkgName         string
+	StructName      string
+	Members         []Member
+	SrcPkgQualifier string
+	Imports         []*registry.Package
 	// Mocks           []MockData
 	// StubImpl        bool
 	// SkipEnsure      bool
@@ -29,7 +30,7 @@ type Data struct {
 
 // New returns a new instance of Template.
 func New() (Template, error) {
-	tmpl, err := template.New("opt").Parse(optTemplate)
+	tmpl, err := template.New("opt").Funcs(templateFuncs).Parse(optTemplate)
 	if err != nil {
 		return Template{}, err
 	}
@@ -43,8 +44,11 @@ var optTemplate = `
 
 package {{.PkgName}}
 
-
-// TODO: imports
+import (
+	{{- range .Imports}}
+		{{. | ImportStatement}}
+	{{- end}}
+)
 
 type Option func(i *{{.StructName}})
 
@@ -74,4 +78,13 @@ func New(opts ...Option) *{{.StructName}} {
 
 func (t Template) Execute(w io.Writer, data Data) error {
 	return t.tmpl.Execute(w, data)
+}
+
+var templateFuncs = template.FuncMap{
+	"ImportStatement": func(imprt *registry.Package) string {
+		if imprt.Alias == "" {
+			return `"` + imprt.Path() + `"`
+		}
+		return imprt.Alias + ` "` + imprt.Path() + `"`
+	},
 }

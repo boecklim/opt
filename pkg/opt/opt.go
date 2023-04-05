@@ -72,6 +72,15 @@ func (m *Generator) Generate(w io.Writer, structName string) error {
 		Members:    members,
 	}
 
+	srcPkgName := m.registry.SrcPkgName()
+	mockPkgName := m.mockPkgName()
+	if srcPkgName != mockPkgName {
+		data.SrcPkgQualifier = m.registry.SrcPkgName() + "."
+		imprt := m.registry.AddImport(m.registry.SrcPkg())
+		data.SrcPkgQualifier = imprt.Qualifier() + "."
+	}
+
+	data.Imports = m.registry.Imports()
 	var buf bytes.Buffer
 	err = m.tmpl.Execute(&buf, data)
 	if err != nil {

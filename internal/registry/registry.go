@@ -12,6 +12,8 @@ import (
 type Registry struct {
 	srcPkg     *packages.Package
 	moqPkgPath string
+	aliases    map[string]string
+	imports    map[string]*Package
 }
 
 // SrcPkg returns the types info for the source package.
@@ -32,6 +34,7 @@ func New(srcDir, moqPkg string) (*Registry, error) {
 	return &Registry{
 		srcPkg:     srcPkg,
 		moqPkgPath: findPkgPath(moqPkg, srcPkg),
+		imports:    make(map[string]*Package),
 	}, nil
 }
 
@@ -65,36 +68,13 @@ func pkgInDir(pkgName, dir string) bool {
 	return currentPkg.Name == pkgName || currentPkg.Name+"_test" == pkgName
 }
 
-func (r Registry) LookupInterface(name string) (*types.Interface, *types.TypeParamList, error) {
-	obj := r.SrcPkg().Scope().Lookup(name)
-	if obj == nil {
-		return nil, nil, fmt.Errorf("interface not found: %s", name)
-	}
-
-	if !types.IsInterface(obj.Type()) {
-		return nil, nil, fmt.Errorf("%s (%s) is not an interface", name, obj.Type())
-	}
-
-	var tparams *types.TypeParamList
-	named, ok := obj.Type().(*types.Named)
-	if ok {
-		tparams = named.TypeParams()
-	}
-
-	return obj.Type().Underlying().(*types.Interface).Complete(), tparams, nil
-}
-
 func (r Registry) LookupStruct(name string) (*types.Struct, *types.TypeParamList, error) {
 	srcPkg := r.SrcPkg()
 	scope := srcPkg.Scope()
 	obj := scope.Lookup(name)
 	if obj == nil {
-		return nil, nil, fmt.Errorf("interface not found: %s", name)
+		return nil, nil, fmt.Errorf("struct not found: %s", name)
 	}
-
-	// if !types.IsInterface(obj.Type()) {
-	// 	return nil, nil, fmt.Errorf("%s (%s) is not an interface", name, obj.Type())
-	// }
 
 	var tparams *types.TypeParamList
 	named, ok := obj.Type().(*types.Named)
@@ -103,8 +83,6 @@ func (r Registry) LookupStruct(name string) (*types.Struct, *types.TypeParamList
 	}
 
 	return obj.Type().Underlying().(*types.Struct), tparams, nil
-
-	//obj.Type().Underlying().(*types.Struct).Field(), tparams, nil
 }
 
 func pkgInfoFromPath(srcDir string, mode packages.LoadMode) (*packages.Package, error) {
@@ -132,4 +110,61 @@ func pkgInfoFromPath(srcDir string, mode packages.LoadMode) (*packages.Package, 
 
 func (r Registry) SrcPkgName() string {
 	return r.srcPkg.Name
+}
+
+// AddImport adds the given package to the set of imports. It generates a
+// suitable alias if there are any conflicts with previously imported
+// packages.
+func (r *Registry) AddImport(pkg *types.Package) *Package {
+	path := stripVendorPath(pkg.Path())
+	if path == r.moqPkgPath {
+		return nil
+	}
+
+	if imprt, ok := r.imports[path]; ok {
+		return imprt
+	}
+
+	imprt := Package{pkg: pkg, Alias: r.aliases[path]}
+
+	if conflict, ok := r.searchImport(imprt.Qualifier()); ok {
+		r.resolveImportConflict(&imprt, conflict, 0)
+	}
+
+	r.imports[path] = &imprt
+	return &imprt
+}
+
+func (r Registry) searchImport(name string) (*Package, bool) {
+	for _, imprt := range r.imports {
+		if imprt.Qualifier() == name {
+			return imprt, true
+		}
+	}
+
+	return nil, false
+}
+
+// resolveImportConflict generates and assigns a unique alias for
+// packages with conflicting qualifiers.
+func (r Registry) resolveImportConflict(a, b *Package, lvl int) {
+	if a.uniqueName(lvl) == b.uniqueName(lvl) {
+		r.resolveImportConflict(a, b, lvl+1)
+		return
+	}
+
+	for _, p := range []*Package{a, b} {
+		name := p.uniqueName(lvl)
+		// Even though the name is not conflicting with the other package we
+		// got, the new name we want to pick might already be taken. So check
+		// again for conflicts and resolve them as well. Since the name for
+		// this package would also get set in the recursive function call, skip
+		// setting the alias after it.
+		if conflict, ok := r.searchImport(name); ok && conflict != p {
+			r.resolveImportConflict(p, conflict, lvl+1)
+			continue
+		}
+
+		p.Alias = name
+	}
 }

@@ -1,9 +1,9 @@
 package example
 
+import "time"
+
 type ExampleStruct struct {
 	firstMember  string
 	SecondMember int
-}
-
-type ExampleInterface interface {
+	timestamp    time.Time
 }

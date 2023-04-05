@@ -14,9 +14,6 @@ func TestLookupStruct(t *testing.T) {
 		registry, err := registry.New("testpackages/example/", "example")
 		require.NoError(t, err)
 
-		_, _, err = registry.LookupInterface("ExampleInterface")
-		require.NoError(t, err)
-
 		str, _, err := registry.LookupStruct("ExampleStruct")
 		require.NoError(t, err)
 

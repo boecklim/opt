@@ -3,7 +3,7 @@
 
 package example
 
-// TODO: imports
+import ()
 
 type Option func(i *ExampleStruct)
 
@@ -18,6 +18,13 @@ func WithfirstMember(firstMember string) Option {
 func WithSecondMember(SecondMember int) Option {
 	return func(s *ExampleStruct) {
 		s.SecondMember = SecondMember
+	}
+}
+
+// With timestamp of type time.Time
+func Withtimestamp(timestamp time.Time) Option {
+	return func(s *ExampleStruct) {
+		s.timestamp = timestamp
 	}
 }
 
