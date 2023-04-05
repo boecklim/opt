@@ -101,7 +101,44 @@ func (m *Generator) populateImports(t types.Type) {
 		if pkg := t.Obj().Pkg(); pkg != nil {
 			m.registry.AddImport(pkg)
 		}
+
+	case *types.Array:
+		m.populateImports(t.Elem())
+
+	case *types.Slice:
+		m.populateImports(t.Elem())
+
+	case *types.Signature:
+		for i := 0; i < t.Params().Len(); i++ {
+			m.populateImports(t.Params().At(i).Type())
+		}
+		for i := 0; i < t.Results().Len(); i++ {
+			m.populateImports(t.Results().At(i).Type())
+		}
+
+	case *types.Map:
+		m.populateImports(t.Key())
+		m.populateImports(t.Elem())
+
+	case *types.Chan:
+		m.populateImports(t.Elem())
+
+	case *types.Pointer:
+		m.populateImports(t.Elem())
+
+	case *types.Struct: // anonymous struct
+		for i := 0; i < t.NumFields(); i++ {
+			m.populateImports(t.Field(i).Type())
+		}
+
+	case *types.Interface: // anonymous interface
+		for i := 0; i < t.NumExplicitMethods(); i++ {
+			m.populateImports(t.ExplicitMethod(i).Type())
+		}
+		for i := 0; i < t.NumEmbeddeds(); i++ {
+			m.populateImports(t.EmbeddedType(i))
+		}
 	}
 }
-func capitalise(s string) string   { return strings.ToUpper(s[:1]) + s[1:] }
-func deCapitalise(s string) string { return strings.ToLower(s[:1]) + s[1:] }
+
+func capitalise(s string) string { return strings.ToUpper(s[:1]) + s[1:] }

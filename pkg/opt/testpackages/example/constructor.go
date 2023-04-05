@@ -4,6 +4,7 @@
 package example
 
 import (
+	"io"
 	"time"
 )
 
@@ -27,6 +28,27 @@ func WithSecondMember(SecondMember int) Option {
 func WithTimestamp(timestamp time.Time) Option {
 	return func(s *ExampleStruct) {
 		s.timestamp = timestamp
+	}
+}
+
+// With byteReader of type func() io.ByteReader
+func WithByteReader(byteReader func() io.ByteReader) Option {
+	return func(s *ExampleStruct) {
+		s.byteReader = byteReader
+	}
+}
+
+// With aSlice of type []float64
+func WithASlice(aSlice []float64) Option {
+	return func(s *ExampleStruct) {
+		s.aSlice = aSlice
+	}
+}
+
+// With aPointer of type *string
+func WithAPointer(aPointer *string) Option {
+	return func(s *ExampleStruct) {
+		s.aPointer = aPointer
 	}
 }
 

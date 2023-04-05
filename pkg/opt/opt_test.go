@@ -27,6 +27,7 @@ func TestOpt(t *testing.T) {
 }
 
 func TestConstructor(t *testing.T) {
+
 	example := example.New(
 		example.WithFirstMember("hello"),
 		example.WithSecondMember(100),
