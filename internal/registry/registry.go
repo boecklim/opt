@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"go/types"
-	"path/filepath"
 
 	"golang.org/x/tools/go/packages"
 )
@@ -34,35 +33,6 @@ func New(srcDir string) (*Registry, error) {
 		srcPkg:  srcPkg,
 		imports: make(map[string]*Package),
 	}, nil
-}
-
-type Var struct {
-	vr      *types.Var
-	imports map[string]*Package
-
-	Name string
-}
-
-func findPkgPath(pkgInputVal string, srcPkg *packages.Package) string {
-	if pkgInputVal == "" {
-		return srcPkg.PkgPath
-	}
-	if pkgInDir(srcPkg.PkgPath, pkgInputVal) {
-		return srcPkg.PkgPath
-	}
-	subdirectoryPath := filepath.Join(srcPkg.PkgPath, pkgInputVal)
-	if pkgInDir(subdirectoryPath, pkgInputVal) {
-		return subdirectoryPath
-	}
-	return ""
-}
-
-func pkgInDir(pkgName, dir string) bool {
-	currentPkg, err := pkgInfoFromPath(dir, packages.NeedName)
-	if err != nil {
-		return false
-	}
-	return currentPkg.Name == pkgName || currentPkg.Name+"_test" == pkgName
 }
 
 func (r Registry) LookupStruct(name string) (*types.Struct, *types.TypeParamList, error) {
@@ -137,14 +107,6 @@ func (r Registry) searchImport(name string) (*Package, bool) {
 	}
 
 	return nil, false
-}
-
-// MethodScope returns a new MethodScope.
-func (r *Registry) MethodScope() *MethodScope {
-	return &MethodScope{
-		registry:   r,
-		conflicted: map[string]bool{},
-	}
 }
 
 // resolveImportConflict generates and assigns a unique alias for

@@ -14,7 +14,6 @@ type Member struct {
 	Name       string
 	Type       string
 	StructName string
-	// Package    registry.Package
 }
 
 type Data struct {
@@ -23,10 +22,6 @@ type Data struct {
 	Members         []Member
 	SrcPkgQualifier string
 	Imports         []*registry.Package
-	// Mocks           []MockData
-	// StubImpl        bool
-	// SkipEnsure      bool
-	// WithResets      bool
 }
 
 // New returns a new instance of Template.

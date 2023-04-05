@@ -57,23 +57,15 @@ func (m *Generator) Generate(w io.Writer, structName string) error {
 	}
 
 	members := make([]template.Member, structType.NumFields())
-	imports := map[string]*registry.Package{}
 
 	for i := 0; i < structType.NumFields(); i++ {
 
-		m.populateImports(structType.Field(i).Type(), imports)
-		// switch t := structType.Field(i).Type().(type) {
-		// case *types.Named:
-		// 	if pkg := t.Obj().Pkg(); pkg != nil {
-		// 		m.registry.AddImport(pkg)
-		// 	}
-		// }
+		m.populateImports(structType.Field(i).Type())
 
 		members[i] = template.Member{
 			Name:       structType.Field(i).Name(),
 			Type:       structType.Field(i).Type().String(),
 			StructName: structName,
-			// TypeParams:    m.typeParams(tparams),
 		}
 	}
 
@@ -82,9 +74,6 @@ func (m *Generator) Generate(w io.Writer, structName string) error {
 		StructName: structName,
 		Members:    members,
 	}
-
-	// imprt := m.registry.AddImport(m.registry.SrcPkg())
-	// data.SrcPkgQualifier = imprt.Qualifier() + "."
 
 	data.Imports = m.registry.Imports()
 	var buf bytes.Buffer
@@ -104,48 +93,48 @@ func (m *Generator) Generate(w io.Writer, structName string) error {
 	}
 	return nil
 }
-func (m *Generator) populateImports(t types.Type, imports map[string]*registry.Package) {
+func (m *Generator) populateImports(t types.Type) {
 	switch t := t.(type) {
 	case *types.Named:
 		if pkg := t.Obj().Pkg(); pkg != nil {
-			imports[registry.StripVendorPath(pkg.Path())] = m.registry.AddImport(pkg)
+			m.registry.AddImport(pkg)
 		}
 
 	case *types.Array:
-		m.populateImports(t.Elem(), imports)
+		m.populateImports(t.Elem())
 
 	case *types.Slice:
-		m.populateImports(t.Elem(), imports)
+		m.populateImports(t.Elem())
 
 	case *types.Signature:
 		for i := 0; i < t.Params().Len(); i++ {
-			m.populateImports(t.Params().At(i).Type(), imports)
+			m.populateImports(t.Params().At(i).Type())
 		}
 		for i := 0; i < t.Results().Len(); i++ {
-			m.populateImports(t.Results().At(i).Type(), imports)
+			m.populateImports(t.Results().At(i).Type())
 		}
 
 	case *types.Map:
-		m.populateImports(t.Key(), imports)
-		m.populateImports(t.Elem(), imports)
+		m.populateImports(t.Key())
+		m.populateImports(t.Elem())
 
 	case *types.Chan:
-		m.populateImports(t.Elem(), imports)
+		m.populateImports(t.Elem())
 
 	case *types.Pointer:
-		m.populateImports(t.Elem(), imports)
+		m.populateImports(t.Elem())
 
 	case *types.Struct: // anonymous struct
 		for i := 0; i < t.NumFields(); i++ {
-			m.populateImports(t.Field(i).Type(), imports)
+			m.populateImports(t.Field(i).Type())
 		}
 
 	case *types.Interface: // anonymous interface
 		for i := 0; i < t.NumExplicitMethods(); i++ {
-			m.populateImports(t.ExplicitMethod(i).Type(), imports)
+			m.populateImports(t.ExplicitMethod(i).Type())
 		}
 		for i := 0; i < t.NumEmbeddeds(); i++ {
-			m.populateImports(t.EmbeddedType(i), imports)
+			m.populateImports(t.EmbeddedType(i))
 		}
 	}
 }
