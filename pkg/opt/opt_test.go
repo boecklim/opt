@@ -27,11 +27,13 @@ func TestOpt(t *testing.T) {
 }
 
 func TestConstructor(t *testing.T) {
-
+	testString := "hello"
 	example := example.New(
-		example.WithFirstMember("hello"),
-		example.WithSecondMember(100),
-		example.WithTimestamp(time.Date(2023, 1, 1, 10, 0, 0, 0, time.UTC)),
+		"firstMember",
+		0,
+		time.Now(),
+		example.WithAPointer(&testString),
+		example.WithASlice([]float64{0.0, 1.1}),
 	)
 
 	fmt.Println(example)

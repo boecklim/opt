@@ -57,24 +57,40 @@ func (m *Generator) Generate(w io.Writer, structName string) error {
 		return err
 	}
 
-	members := make([]template.Member, structType.NumFields())
+	optStart := false
+
+	members := make([]template.Member, 0, structType.NumFields())
+	parameterMembers := make([]template.Member, 0, structType.NumFields())
 
 	for i := 0; i < structType.NumFields(); i++ {
 
 		m.populateImports(structType.Field(i).Type())
 
-		members[i] = template.Member{
+		newMember := template.Member{
 			Name:            structType.Field(i).Name(),
 			CapitalizedName: capitalise(structType.Field(i).Name()),
 			Type:            structType.Field(i).Type().String(),
 			StructName:      structName,
 		}
+
+		tag := structType.Tag(i)
+		if strings.Contains(tag, "opt:\"true\"") {
+			optStart = true
+		}
+
+		if optStart {
+			members = append(members, newMember)
+		} else {
+			parameterMembers = append(parameterMembers, newMember)
+		}
+
 	}
 
 	data := template.Data{
-		PkgName:    m.registry.SrcPkgName(),
-		StructName: structName,
-		Members:    members,
+		PkgName:          m.registry.SrcPkgName(),
+		StructName:       structName,
+		Members:          members,
+		ParameterMembers: parameterMembers,
 	}
 
 	data.Imports = m.registry.Imports()

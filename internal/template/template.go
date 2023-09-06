@@ -18,11 +18,12 @@ type Member struct {
 }
 
 type Data struct {
-	PkgName         string
-	StructName      string
-	Members         []Member
-	SrcPkgQualifier string
-	Imports         []*registry.Package
+	PkgName          string
+	StructName       string
+	Members          []Member
+	SrcPkgQualifier  string
+	Imports          []*registry.Package
+	ParameterMembers []Member
 }
 
 // New returns a new instance of Template.
@@ -60,7 +61,7 @@ func With{{.CapitalizedName}}({{.Name}} {{.Type}}) Option {
 
 {{- end}}
 
-func New(opts ...Option) *{{.StructName}} {
+func New({{- range .ParameterMembers}}{{.Name}} {{.Type}}, {{- end}}opts ...Option) *{{.StructName}} {
 	newInstance := {{.StructName}}{}
 
 		for _, opt := range opts {

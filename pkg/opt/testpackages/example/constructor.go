@@ -10,27 +10,6 @@ import (
 
 type Option func(i *ExampleStruct)
 
-// With firstMember of type string
-func WithFirstMember(firstMember string) Option {
-	return func(s *ExampleStruct) {
-		s.firstMember = firstMember
-	}
-}
-
-// With SecondMember of type int
-func WithSecondMember(SecondMember int) Option {
-	return func(s *ExampleStruct) {
-		s.SecondMember = SecondMember
-	}
-}
-
-// With timestamp of type time.Time
-func WithTimestamp(timestamp time.Time) Option {
-	return func(s *ExampleStruct) {
-		s.timestamp = timestamp
-	}
-}
-
 // With byteReader of type func() io.ByteReader
 func WithByteReader(byteReader func() io.ByteReader) Option {
 	return func(s *ExampleStruct) {
@@ -52,7 +31,7 @@ func WithAPointer(aPointer *string) Option {
 	}
 }
 
-func New(opts ...Option) *ExampleStruct {
+func New(firstMember string, SecondMember int, timestamp time.Time, opts ...Option) *ExampleStruct {
 	newInstance := ExampleStruct{}
 
 	for _, opt := range opts {

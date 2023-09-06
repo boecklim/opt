@@ -28,10 +28,8 @@ func main() {
 	flag.BoolVar(&flags.remove, "rm", false, "first remove output file, if it exists")
 
 	flag.Usage = func() {
-		fmt.Println(`opt [flags] source-dir interface [interface2 [interface3 [...]]]`)
+		fmt.Println(`opt [flags] source-dir struct-name`)
 		flag.PrintDefaults()
-		fmt.Println(`Specifying an alias for the mock is also supported with the format 'interface:alias'`)
-		fmt.Println(`Ex: moq -pkg different . MyInterface:MyMock`)
 	}
 
 	flag.Parse()
