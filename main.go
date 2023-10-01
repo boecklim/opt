@@ -24,7 +24,7 @@ func main() {
 	var flags userFlags
 	flag.StringVar(&flags.outFile, "out", "", "output file (default stdout)")
 	// flag.StringVar(&flags.formatter, "fmt", "", "go pretty-printer: gofmt, goimports or noop (default gofmt)")
-	printVersion := flag.Bool("version", false, "show the version for moq")
+	printVersion := flag.Bool("version", false, "show the version for opt")
 	flag.BoolVar(&flags.remove, "rm", false, "first remove output file, if it exists")
 
 	flag.Usage = func() {
