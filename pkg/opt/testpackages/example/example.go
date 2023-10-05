@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-//go:generate opt -out example_mock.go -rm . ExampleStruct
+//go:generate opt -out constructor.go -rm . ExampleStruct
 type ExampleStruct struct {
 	firstMember  string
 	SecondMember int
